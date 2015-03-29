@@ -2,6 +2,7 @@ use Test::More;
 use warnings;
 use strict;
 
+use Sub::Name 'subname';
 use B 'svref_2object';
 
 
@@ -21,7 +22,7 @@ push @test_ordinals, 0x100, 0x498, 0x2122, 0x1f4a9
 
 
 plan tests =>
-  @test_ordinals * 2
+  @test_ordinals * 4
 ;
 
 
@@ -54,6 +55,10 @@ for my $ord (@test_ordinals) {
   }
 
   my (%tests, $me_via_caller);
+
+  $tests{synthetic} = {
+    cref => subname ( $initial_full_name, sub { $me_via_caller = (caller(0))[3] } )
+  };
 
   # we can *always* compile at least within the correct package
   $tests{"natively compiled"} = do {
