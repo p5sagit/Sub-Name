@@ -8,6 +8,12 @@ Revision history for Sub-Name
     - mark the test with B::C as TODO, as it seems to fail frequently and
       should not block normal installations
 
+0.15      2015-03-29
+    - add support for utf8 and binary names (Reini Urban)
+
+0.14      2015-03-29
+    - add tests for utf8 and binary names (Ribasushi + Aristotle Pagaltzis)
+
 0.13      2015-03-28 06:27:23Z
     - fix optional test of interaction with B::C that sometimes invalidly
       failed

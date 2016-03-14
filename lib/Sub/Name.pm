@@ -41,7 +41,7 @@ can be very useful for debugging.
 =head1 COPYRIGHT AND LICENSE
 
 This software is copyright (c) 2004, 2008 by Matthijs van Duin, all rights reserved;
-copyright (c) 2014 cPanel Inc., all rights reserved.
+copyright (c) 2014, 2015 cPanel Inc., all rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself.
