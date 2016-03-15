@@ -21,7 +21,7 @@ sub compile_named_sub {
 }
 
 sub caller3_ok {
-    my ( $sub, $expected, $type, $ord ) = @_;
+    my ( $sub, $expected, $type, $ord, $known_bad ) = @_;
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
 
@@ -44,8 +44,11 @@ sub caller3_ok {
 
     my $stash_name = join '::', map { $_->STASH->NAME, $_->NAME } svref_2object($sub)->GV;
 
-    is $stash_name, $expected, "stash name for $type is correct $for_what";
-    is $sub->(), $expected, "caller() in $type returns correct name $for_what";
+    TODO: {
+        local $TODO = "char $for_what not yet supported" if $known_bad;
+        is $stash_name, $expected, "stash name for $type is correct $for_what";
+        is $sub->(), $expected, "caller() in $type returns correct name $for_what";
+    }
 }
 
 #######################################################################
@@ -66,6 +69,8 @@ push @ordinal,
     0x1f4a9,  # PILE OF POO
     unless $] < 5.008;
 
+my %known_bad = map { $_ => 1 } ( 0, 0x27, 0x100, 0x498, 0x2122, 0x1f4a9 );
+
 plan tests => @ordinal * 2 * 2;
 
 my $legal_ident_char = "A-Z_a-z0-9'";
@@ -79,7 +84,7 @@ for my $ord (@ordinal) {
     my $fullname = join '::', $pkg, $subname;
 
     $sub = subname $fullname => sub { (caller(0))[3] };
-    caller3_ok $sub, $fullname, 'renamed closure', $ord;
+    caller3_ok $sub, $fullname, 'renamed closure', $ord, $known_bad{$ord};
 
     # test that we can *always* compile at least within the correct package
     my $expected;
