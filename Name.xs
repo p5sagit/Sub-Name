@@ -7,6 +7,8 @@
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#define NEED_sv_2pv_flags
+#define NEED_gv_fetchpvn_flags
 #include "ppport.h"
 
 static MGVTBL subname_vtbl;
@@ -29,14 +31,18 @@ PROTOTYPES: DISABLE
 
 void
 subname(name, sub)
-	char *name
+	SV *name
 	SV *sub
     PREINIT:
 	CV *cv = NULL;
 	GV *gv;
 	HV *stash = CopSTASH(PL_curcop);
-	char *s, *end = NULL;
+	const char *s, *end = NULL, *begin = NULL;
 	MAGIC *mg;
+	STRLEN namelen;
+	int utf8flag = SvUTF8(name);
+	const char* nameptr = SvPV(name, namelen);
+	int seen_quote = 0, need_subst = 0;
     PPCODE:
 	if (!SvROK(sub) && SvGMAGICAL(sub))
 		mg_get(sub);
@@ -49,26 +55,54 @@ subname(name, sub)
 	else if (PL_op->op_private & HINT_STRICT_REFS)
 		croak("Can't use string (\"%.32s\") as %s ref while \"strict refs\" in use",
 		      SvPV_nolen(sub), "a subroutine");
-	else if ((gv = gv_fetchpv(SvPV_nolen(sub), FALSE, SVt_PVCV)))
+	else if ((gv = gv_fetchsv(sub, FALSE, SVt_PVCV)))
 		cv = GvCVu(gv);
 	if (!cv)
 		croak("Undefined subroutine %s", SvPV_nolen(sub));
 	if (SvTYPE(cv) != SVt_PVCV && SvTYPE(cv) != SVt_PVFM)
 		croak("Not a subroutine reference");
-	for (s = name; *s++; ) {
-		if (*s == ':' && s[-1] == ':')
-			end = ++s;
-		else if (*s && s[-1] == '\'')
-			end = s;
+
+	for (s = nameptr; s <= nameptr + namelen; s++) {
+		if (*s == ':' && s[-1] == ':') {
+			end = s - 1;
+			begin = ++s;
+			if (seen_quote)
+				seen_quote++;
+		}
+		else if (*s && s[-1] == '\'') {
+			end = s - 1;
+			begin = s;
+			seen_quote++;
+		}
 	}
 	s--;
-        if (end) {
-		char *namepv = savepvn(name, end - name);
-		stash = GvHV(gv_fetchpv(namepv, TRUE, SVt_PVHV));
-		Safefree(namepv);
-                name = end;
-        }
+	if (end) {
+		SV* tmp;
+		if (seen_quote > 1) {
+			STRLEN length = end - nameptr + seen_quote;
+			char* left;
+			int i, j;
+			tmp = newSV(length);
+			left = SvPVX(tmp);
+			for (i = 0, j = 0; j <= end - nameptr; ++i, ++j) {
+				if (nameptr[j] == '\'') {
+					left[i] = ':';
+					left[++i] = ':';
+				}
+				else {
+					left[i] = nameptr[j];
+				}
+			}
+			stash = gv_stashpvn(left, i - 2, GV_ADD | utf8flag);
+			SvREFCNT_dec(tmp);
+		}
+		else
+			stash = gv_stashpvn(nameptr, end - nameptr, GV_ADD | utf8flag);
+		nameptr = begin;
+		namelen -= begin - nameptr;
+	}
 
+	#ifdef PERL_VERSION < 10
 	/* under debugger, provide information about sub location */
 	if (PL_DBsub && CvGV(cv)) {
 		HV *hv = GvHV(PL_DBsub);
@@ -80,7 +114,7 @@ subname(name, sub)
 		char* old_pkg = HvNAME( GvSTASH(CvGV(cv)) );
 
 		int old_len = strlen(old_name) + strlen(old_pkg);
-		int new_len = strlen(name) + strlen(new_pkg);
+		int new_len = namelen + strlen(new_pkg);
 
 		char* full_name;
 		Newxz(full_name, (old_len > new_len ? old_len : new_len) + 3, char);
@@ -94,7 +128,7 @@ subname(name, sub)
 		if (old_data) {
 			strcpy(full_name, new_pkg);
 			strcat(full_name, "::");
-			strcat(full_name, name);
+			strcat(full_name, nameptr);
 
 			SvREFCNT_inc(*old_data);
 			if (!hv_store(hv, full_name, strlen(full_name), *old_data, 0))
@@ -102,9 +136,10 @@ subname(name, sub)
 		}
 		Safefree(full_name);
 	}
+	#endif
 
 	gv = (GV *) newSV(0);
-	gv_init(gv, stash, name, s - name, TRUE);
+	gv_init_pvn(gv, stash, nameptr, s - nameptr, GV_ADDMULTI | utf8flag);
 
 	mg = SvMAGIC(cv);
 	while (mg && mg->mg_virtual != &subname_vtbl)
