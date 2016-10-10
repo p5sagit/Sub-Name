@@ -10,6 +10,7 @@
 #define NEED_sv_2pv_flags
 #define NEED_newSVpvn_flags
 #define NEED_gv_fetchpvn_flags
+#define NEED_sv_catpvn_flags
 #include "ppport.h"
 
 static MGVTBL subname_vtbl;
@@ -48,6 +49,10 @@ static MGVTBL subname_vtbl;
 
 #ifndef SV_CATBYTES
 #define SV_CATBYTES 0
+#endif
+
+#ifndef sv_catpvn_flags
+#define sv_catpvn_flags(b,n,l,f) sv_catpvn(b,n,l)
 #endif
 
 MODULE = Sub::Name  PACKAGE = Sub::Name

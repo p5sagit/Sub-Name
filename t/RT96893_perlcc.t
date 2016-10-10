@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More 0.88;
+use Test::More;
 
 plan skip_all => 'B::C required for testing perlcc -O3'
     unless eval "require B::C;";
