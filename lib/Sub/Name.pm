@@ -56,7 +56,8 @@ use warnings;
 
 our $VERSION = '0.21';
 
-use Exporter 5.57 'import';
+use Exporter ();
+*import = \&Exporter::import;
 
 our @EXPORT = qw(subname);
 our @EXPORT_OK = @EXPORT;
