@@ -6,9 +6,9 @@ addons:
       - aspell-en
 language: perl
 perl:
-  - "blead"
+  - "blead"         # builds perl from git
   - "blead-thr"
-  - "dev"
+  - "dev"           # latest point release
   - "dev-thr"
   - "5.26"
   - "5.26-thr"
@@ -43,16 +43,13 @@ matrix:
     - perl: blead-thr
 before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
-  - source ~/travis-perl-helpers/init --always-upgrade-modules
+  - source ~/travis-perl-helpers/init
   - build-perl
   - perl -V
   - build-dist
   - cd $BUILD_DIR
 install:
-  - cpan-install ExtUtils::MakeMaker~6.68 --deps Devel::PPPort
-  - cpan-install --coverage
-before_script:
-  - coverage-setup
+  - cpan-install ExtUtils::MakeMaker~6.68 Devel::PPPort~3.33
 script:
   - perl Makefile.PL
   - make
