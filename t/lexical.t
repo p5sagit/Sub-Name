@@ -8,6 +8,12 @@ BEGIN {
   }
 }
 
+BEGIN {
+  if ("$]" < 5.020) {
+    plan 'skip_all' => 'lexical subs unreliable on this perl';
+  }
+}
+
 use feature 'lexical_subs';
 no warnings 'experimental::lexical_subs';
 
