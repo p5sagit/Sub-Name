@@ -39,9 +39,7 @@ matrix:
   # modules required for author testing do not build on 5.6
   exclude:
     - perl: "5.6.2"
-      env: AUTHOR_TESTING=1
     - perl: "5.6.2-thr"
-      env: AUTHOR_TESTING=1
   include:
     - perl: "5.6.2"
       env: AUTHOR_TESTING=0
