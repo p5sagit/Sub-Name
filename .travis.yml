@@ -50,6 +50,8 @@ env:
     - AUTOMATED_TESTING=1
     - RELEASE_TESTING=0
 before_install:
+  - perl -MScalar::Util -e'print qq{Scalar::Util is at version $Scalar::Util::VERSION\n}'
+  - perl -M5.008 -e1 2>/dev/null || cpan-install Scalar::Util@1.52
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init
   - build-perl
