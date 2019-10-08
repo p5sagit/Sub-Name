@@ -42,27 +42,19 @@ matrix:
     # modules required for author testing do not build on 5.6
     - perl: "5.6.2"
       env: AUTHOR_TESTING=0
-      before_install:
-        - perl -MScalar::Util -e'print qq{Scalar::Util is at version $Scalar::Util::VERSION\n}'
-        - perl -M5.008 -e1 2>/dev/null || cpan-install Scalar::Util@1.52
-        - perl -MScalar::Util -e'print qq{Scalar::Util is at version $Scalar::Util::VERSION\n}'
     - perl: "5.6.2-thr"
       env: AUTHOR_TESTING=0
-      before_install:
-        - perl -MScalar::Util -e'print qq{Scalar::Util is at version $Scalar::Util::VERSION\n}'
-        - perl -M5.008 -e1 2>/dev/null || cpan-install Scalar::Util@1.52
-        - perl -MScalar::Util -e'print qq{Scalar::Util is at version $Scalar::Util::VERSION\n}'
 env:
   global:
     - AUTHOR_TESTING=1
     - AUTOMATED_TESTING=1
     - RELEASE_TESTING=0
 before_install:
+  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+  - source ~/travis-perl-helpers/init
   - perl -MScalar::Util -e'print qq{global -- Scalar::Util is at version $Scalar::Util::VERSION\n}'
   - perl -M5.008 -e1 2>/dev/null || cpan-install Scalar::Util@1.52
   - perl -MScalar::Util -e'print qq{global -- Scalar::Util is at version $Scalar::Util::VERSION\n}'
-  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
-  - source ~/travis-perl-helpers/init
   - build-perl
   - perl -V
   - build-dist
