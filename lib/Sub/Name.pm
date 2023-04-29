@@ -54,7 +54,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '0.27';
+our $VERSION = '0.28';
 
 use Exporter ();
 *import = \&Exporter::import;
