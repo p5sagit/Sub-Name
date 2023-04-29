@@ -1,6 +1,7 @@
 Revision history for Sub-Name
 
 {{$NEXT}}
+    - skip quote-separator tests on newer perls that deprecate this behaviour
 
 0.26      2019-10-05 22:23:12Z
     - no changes since 0.25
