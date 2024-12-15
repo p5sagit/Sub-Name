@@ -1,5 +1,7 @@
 Revision history for Sub-Name
 
+{{$NEXT}}
+
 0.28      2024-12-15 20:57:44Z
     - fix version comparison logic for forward compatibility
 
